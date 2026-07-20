@@ -1,0 +1,21 @@
+name: Dev prerelease (push → GitHub Packages @dev)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: dev-publish
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  prerelease:
+    uses: ./.github/workflows/_build.yml
+    with:
+      publish_tag: dev
+    secrets: inherit

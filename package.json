@@ -1,0 +1,52 @@
+{
+  "name": "@tracht-digital-solutions/tds-tool-media",
+  "version": "0.1.0",
+  "description": "Media utilities for the TDS tools platform: image compression/resize (free) + PDF tools — merge/split/rotate (premium). Fully client-side.",
+  "license": "UNLICENSED",
+  "private": false,
+  "type": "module",
+  "files": [
+    "dist",
+    "tools",
+    "islands",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./tools/*": "./tools/*",
+    "./islands/*": "./islands/*"
+  },
+  "scripts": {
+    "build": "tsup",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
+  },
+  "peerDependencies": {
+    "@tracht-digital-solutions/tds-tools-contract": "^1.0.0",
+    "astro": ">=6",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@tracht-digital-solutions/tds-tools-contract": "^1.0.0",
+    "@types/react": "^19.0.0",
+    "rimraf": "^6.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tracht-Digital-Solutions/tds-tool-media.git"
+  }
+}
