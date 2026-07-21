@@ -23,4 +23,4 @@ npm run build
 ```
 
 The `.astro` shells + `.tsx` islands are validated at the **site** build. Release
-via the manual GitHub button. See `tds-tools-contract` for the platform model.
+on push to `main` (auto-release @latest; the manual button is for minor/major). See `tds-tools-contract` for the platform model.
