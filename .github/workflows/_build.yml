@@ -1,8 +1,9 @@
 name: Build (reusable)
 
 # Single source of truth for this tool package. Called by ci.yml (PR gate, no
-# publish), dev.yml (prerelease -> @dev) and release.yml (version bump ->
-# @latest + push tag). Behaviour selected via the inputs below.
+# publish), and by dev.yml (push → @latest patch) / release.yml (manual bump).
+# A @latest publish also dispatches a rebuild of the dependent site so it picks
+# up the new version. Behaviour selected via the inputs below.
 #
 # Tool packages are npm-only (no PHP half): a manifest (src/index.ts, compiled by
 # tsup) + raw .astro/.tsx consumed by the tds-tools site. type-check + build gate
@@ -21,6 +22,11 @@ on:
         required: false
         type: string
         default: patch
+      rebuild_site:
+        description: Repo whose release.yml to dispatch after a @latest publish (site rebuild). Empty = none.
+        required: false
+        type: string
+        default: ''
 
 jobs:
   build:
@@ -63,18 +69,28 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
 
       - name: Release (@latest) + push tag
+        # The bump commit carries [skip ci] so pushing it back to main does NOT
+        # re-trigger the auto-release workflow (no publish loop).
         if: ${{ inputs.publish_tag == 'latest' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           new=$(npm version ${{ inputs.bump }} --no-git-tag-version)
           git add package.json
-          git commit -m "release: ${new}"
+          git commit -m "release: ${new} [skip ci]"
           git tag -a "${new}" -m "release ${new}"
           npm publish
           git push --follow-tags origin HEAD:main
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+
+      - name: Dispatch site rebuild
+        # After a real release, kick the dependent site's deploy so it rebuilds
+        # against the new package version.
+        if: ${{ inputs.publish_tag == 'latest' && inputs.rebuild_site != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+        run: gh workflow run release.yml -R Tracht-Digital-Solutions/${{ inputs.rebuild_site }}
 
       - name: Prune old prerelease package versions (keep newest 5)
         continue-on-error: true
