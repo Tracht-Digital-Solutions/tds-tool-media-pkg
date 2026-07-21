@@ -1,6 +1,6 @@
 # @tracht-digital-solutions/tds-tool-media
 
-Media utilities for the **TDS tools platform** (`tds-tools`). Fully client-side —
+Media utilities for the **TDS tools platform** (`tds-tools-frontend`). Fully client-side —
 nothing is uploaded.
 
 ## Tools
@@ -23,4 +23,4 @@ npm run build
 ```
 
 The `.astro` shells + `.tsx` islands are validated at the **site** build. Release
-on push to `main` (auto-release @latest; the manual button is for minor/major). See `tds-tools-contract` for the platform model.
+on push to `main` (auto-release @latest; the manual button is for minor/major). See `tds-tools-contract-pkg` for the platform model.

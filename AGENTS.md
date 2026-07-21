@@ -1,7 +1,7 @@
-# AGENTS.md — tds-tool-media
+# AGENTS.md — tds-tool-media-pkg
 
 A **tool package** for the TDS tools platform (image compressor + premium PDF
-toolkit). Read `tds-tools-contract`'s AGENTS.md for the platform model.
+toolkit). Read `tds-tools-contract-pkg`'s AGENTS.md for the platform model.
 
 ## Shape
 
@@ -17,7 +17,7 @@ toolkit). Read `tds-tools-contract`'s AGENTS.md for the platform model.
 - `component` = package subpath via `exports`, never relative.
 - Tool `id` + `slug` globally unique across composed packs.
 - `pdf-tools` declares `premiumDefault: true` — the paywall itself lives in the
-  site tool page (login + entitlement) + `tds-ext-tools` (Stripe), NOT here. This
+  site tool page (login + entitlement) + `tds-ext-tools-pkg` (Stripe), NOT here. This
   package just marks the default.
 - Islands/.astro compile at the site build (not in tsconfig `include`).
 - Version stays in the `0.1.x` line (site pins `^0.1.x`).

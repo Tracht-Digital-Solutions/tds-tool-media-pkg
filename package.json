@@ -47,6 +47,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tracht-Digital-Solutions/tds-tool-media.git"
+    "url": "git+https://github.com/Tracht-Digital-Solutions/tds-tool-media-pkg.git"
   }
 }
