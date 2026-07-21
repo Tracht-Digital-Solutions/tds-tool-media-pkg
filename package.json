@@ -1,6 +1,6 @@
 {
   "name": "@tracht-digital-solutions/tds-tool-media",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Media utilities for the TDS tools platform: image compression/resize (free) + PDF tools — merge/split/rotate (premium). Fully client-side.",
   "license": "UNLICENSED",
   "private": false,
