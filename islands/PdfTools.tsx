@@ -89,7 +89,8 @@ export default function PdfTools() {
     }
   };
 
-  const field = "w-full rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-paper)] px-3 py-2";
+  // Geometry/border/padding from the shared primitive; the pack ships no CSS.
+  const field = "field-boxed w-full";
 
   return (
     <div className="pdf-tools space-y-5">
@@ -106,10 +107,8 @@ export default function PdfTools() {
             type="button"
             role="tab"
             aria-selected={mode === value}
+            className={mode === value ? "chip chip-active" : "chip"}
             onClick={() => { setMode(value); setStatus(null); setError(null); }}
-            className={`rounded-full px-4 py-1.5 text-sm ${
-              mode === value ? "bg-[color:var(--color-primary)] text-[color:var(--color-paper)]" : "border border-[color:var(--color-border)]"
-            }`}
           >
             {label}
           </button>
@@ -147,7 +146,7 @@ export default function PdfTools() {
         </label>
       )}
 
-      <button type="button" onClick={run} disabled={busy} className="rounded-lg bg-[color:var(--color-primary)] px-4 py-2 text-sm text-[color:var(--color-paper)] disabled:opacity-50">
+      <button type="button" className="btn btn-primary" onClick={run} disabled={busy}>
         {busy ? "Verarbeite …" : "Ausführen & herunterladen"}
       </button>
 

@@ -55,6 +55,14 @@ jobs:
       - name: Type check
         run: npm run type-check
 
+      - name: Lint primitives
+        # Tool packs ship no CSS of their own, so a control without the shared
+        # class is unstyled — and an unclassed <input> is INVISIBLE, because
+        # Tailwind preflight zeroes borders. All 12 buttons across the four
+        # packs had drifted bare, and the hand-rolled radii pinned the tools
+        # to the marketing geometry after the site moved to the panel surface.
+        run: npm run lint:primitives
+
       - name: Build
         run: npm run build
 

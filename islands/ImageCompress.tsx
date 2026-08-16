@@ -66,7 +66,8 @@ export default function ImageCompress() {
 
   const ext = format === "image/webp" ? "webp" : "jpg";
   const saving = original && result ? Math.round((1 - result.size / original.size) * 100) : null;
-  const field = "w-full rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-paper)] px-3 py-2";
+  // Geometry/border/padding from the shared primitive; the pack ships no CSS.
+  const field = "field-boxed w-full";
 
   return (
     <div className="image-compress space-y-5">
@@ -94,7 +95,7 @@ export default function ImageCompress() {
               <input type="range" min={320} max={4000} step={80} value={maxWidth} onChange={(e) => setMaxWidth(Number(e.target.value))} className="w-full" />
             </label>
           </div>
-          <button type="button" onClick={compress} disabled={busy} className="rounded-lg bg-[color:var(--color-primary)] px-4 py-2 text-sm text-[color:var(--color-paper)] disabled:opacity-50">
+          <button type="button" className="btn btn-primary" onClick={compress} disabled={busy}>
             {busy ? "Komprimiere …" : "Komprimieren"}
           </button>
         </>
@@ -103,14 +104,14 @@ export default function ImageCompress() {
       {error && <p className="status-pill status-pill--danger text-sm">{error}</p>}
 
       {result && original && (
-        <div className="space-y-3 rounded-xl border border-[color:var(--color-border)] p-4">
-          <img src={result.url} alt="Komprimiertes Bild" className="max-h-64 rounded-lg" />
+        <div className="tds-card space-y-3 p-4">
+          <img src={result.url} alt="Komprimiertes Bild" className="tds-card h-auto max-h-64 max-w-full" />
           <p className="text-sm">
             {fmtSize(original.size)} → <strong>{fmtSize(result.size)}</strong>
             {saving !== null && saving > 0 && <span className="text-[color:var(--color-success)]"> ({saving}% kleiner)</span>}
             <span className="opacity-60"> · {result.width}×{result.height}px</span>
           </p>
-          <a href={result.url} download={`komprimiert.${ext}`} className="inline-block rounded-lg border border-[color:var(--color-border)] px-4 py-2 text-sm">
+          <a href={result.url} download={`komprimiert.${ext}`} className="btn btn-ghost">
             Herunterladen
           </a>
         </div>
