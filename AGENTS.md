@@ -51,11 +51,14 @@ docblock; the manifest suite runs in node.
 - **Never hand-author a radius, and do not reach for `rounded-[var(--tds-radius-*)]`
   either.** Tailwind does not generate arbitrary values out of a package inside
   `node_modules`, so from here that ships as no rule at all. Use the shared class.
-- **Write `className` BEFORE the event handler on a control.** `lint-primitives` is
-  a regex scan and its tag match stops at the first `>`, which an arrow function
-  (`onClick={() => …}`) supplies — so a correctly classed control listed after its
-  handler is reported as bare. All 14 repos carrying the script already follow this
-  order; keep it rather than diverging one copy.
+- **Attribute order no longer matters, and neither does what you name a class
+  constant** (fixed 2026-08-16). `lint-primitives` used to match a tag with
+  `[^>]*>`, which stops at the first `>` — and an arrow handler
+  (`onClick={() => …}`) supplies one, so a correctly classed control written after
+  its handler was reported as bare. It also read `className={x}` as the literal
+  text `x`, so `{field}` passed and `{area}` did not. The script now walks the tag
+  tracking quotes and brace depth, and resolves a local `const` to its string.
+  Both workarounds are gone; all 20 repos carry the identical fixed script.
 - **`islands/` is NOT type-checked here** (`tsconfig` covers `src/**/*` only). The
   islands are compiled by the tds-tools-frontend build — that build is the real
   gate for a markup change, not `npm run type-check`.
