@@ -319,3 +319,32 @@ describe("failure handling", () => {
     expect(captured).toBeNull();
   });
 });
+
+/**
+ * The English branch. Every case above renders without props and so doubles
+ * as the regression test for the German default.
+ *
+ * The page-range SYNTAX is not translated — "1-3,5" parses identically in
+ * both languages, which is what the last case pins.
+ */
+describe("in English", () => {
+  it("translates the mode tabs", () => {
+    render(<PdfTools lang="en" />);
+    expect(screen.getByRole("tab", { name: "Merge" })).toBeDefined();
+    expect(screen.getByRole("tab", { name: "Split" })).toBeDefined();
+    expect(screen.getByRole("tab", { name: "Rotate" })).toBeDefined();
+    expect(screen.queryByRole("tab", { name: "Zusammenführen" })).toBeNull();
+  });
+
+  it("refuses an empty selection in English", async () => {
+    const u = userEvent.setup({ delay: null });
+    render(<PdfTools lang="en" />);
+    await u.click(screen.getByRole("button", { name: "Run & download" }));
+    expect(await screen.findByText("Please choose at least two PDFs.")).toBeDefined();
+  });
+
+  it("states the local-processing promise in English", () => {
+    render(<PdfTools lang="en" />);
+    expect(screen.getByText(/never uploaded/)).toBeDefined();
+  });
+});

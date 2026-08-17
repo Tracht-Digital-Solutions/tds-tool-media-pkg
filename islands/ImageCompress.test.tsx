@@ -245,3 +245,22 @@ describe("size readout", () => {
     expect(screen.queryByText(/kleiner/)).toBeNull();
   });
 });
+
+/**
+ * The English branch. Every case above renders without props and so doubles
+ * as the regression test for the German default.
+ */
+describe("in English", () => {
+  it("translates the file picker", () => {
+    render(<ImageCompress lang="en" />);
+    expect(screen.getByLabelText(/Choose an image/)).toBeDefined();
+    expect(screen.queryByLabelText(/Bild auswählen/)).toBeNull();
+  });
+
+  it("states the local-processing promise in English", () => {
+    // This sentence IS the tool's selling point against the upload-based
+    // competitors, so it must not silently stay German on an English page.
+    render(<ImageCompress lang="en" />);
+    expect(screen.getByText(/never uploaded/)).toBeDefined();
+  });
+});

@@ -1,7 +1,19 @@
 ---
+// PdfTools tool shell — hosts the client-side island.
+//
+// `lang` comes from the site's tool-page template so the island renders its
+// labels in the page's language. It defaults to German at both levels: a
+// consumer that renders the shell without the prop gets exactly the behaviour
+// it had before the English tree existed.
 import PdfTools from "../islands/PdfTools.tsx";
+
+interface Props {
+  lang?: "de" | "en";
+}
+
+const { lang = "de" } = Astro.props;
 ---
 
 <div class="tool tool--pdf">
-  <PdfTools client:load />
+  <PdfTools client:load lang={lang} />
 </div>

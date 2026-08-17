@@ -1,5 +1,64 @@
 import { useState } from "react";
 
+/** See the tools-site convention: labels are translated, logic is not. */
+type Lang = "de" | "en";
+
+interface Strings {
+  loadFailed: string;
+  noCanvas: string;
+  compressFailed: string;
+  genericError: string;
+  chooseImage: string;
+  format: string;
+  quality: string;
+  maxWidth: string;
+  compressing: string;
+  compress: string;
+  resultAlt: string;
+  smaller: (pct: number) => string;
+  download: string;
+  downloadName: string;
+  note: string;
+}
+
+/** German is the default — every existing test here asserts German labels. */
+const STRINGS = {
+  de: {
+    loadFailed: "Bild konnte nicht geladen werden.",
+    noCanvas: "Canvas nicht verfügbar.",
+    compressFailed: "Komprimierung fehlgeschlagen.",
+    genericError: "Fehler bei der Komprimierung.",
+    chooseImage: "Bild auswählen",
+    format: "Format",
+    quality: "Qualität",
+    maxWidth: "Max. Breite",
+    compressing: "Komprimiere …",
+    compress: "Komprimieren",
+    resultAlt: "Komprimiertes Bild",
+    smaller: (pct) => ` (${pct}% kleiner)`,
+    download: "Herunterladen",
+    downloadName: "komprimiert",
+    note: "Alle Bilder werden lokal in Ihrem Browser verarbeitet und niemals hochgeladen.",
+  },
+  en: {
+    loadFailed: "The image could not be loaded.",
+    noCanvas: "Canvas is not available.",
+    compressFailed: "Compression failed.",
+    genericError: "Something went wrong while compressing.",
+    chooseImage: "Choose an image",
+    format: "Format",
+    quality: "Quality",
+    maxWidth: "Max. width",
+    compressing: "Compressing …",
+    compress: "Compress",
+    resultAlt: "Compressed image",
+    smaller: (pct) => ` (${pct}% smaller)`,
+    download: "Download",
+    downloadName: "compressed",
+    note: "All images are processed locally in your browser and are never uploaded.",
+  },
+} satisfies Record<Lang, Strings>;
+
 interface Result {
   url: string;
   size: number;
@@ -19,7 +78,12 @@ function fmtSize(bytes: number): string {
  * width, and re-encode as JPEG or WebP at the chosen quality. Nothing is
  * uploaded — the file is read + processed entirely in the browser.
  */
-export default function ImageCompress() {
+interface Props {
+  lang?: Lang;
+}
+
+export default function ImageCompress({ lang = "de" }: Props) {
+  const t = STRINGS[lang];
   const [original, setOriginal] = useState<{ name: string; size: number } | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [format, setFormat] = useState<"image/jpeg" | "image/webp">("image/jpeg");
@@ -36,7 +100,7 @@ export default function ImageCompress() {
     setOriginal({ name: file.name, size: file.size });
     const img = new Image();
     img.onload = () => setImgEl(img);
-    img.onerror = () => setError("Bild konnte nicht geladen werden.");
+    img.onerror = () => setError(t.loadFailed);
     img.src = URL.createObjectURL(file);
   };
 
@@ -52,13 +116,13 @@ export default function ImageCompress() {
       canvas.width = w;
       canvas.height = h;
       const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Canvas nicht verfügbar.");
+      if (!ctx) throw new Error(t.noCanvas);
       ctx.drawImage(imgEl, 0, 0, w, h);
       const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, format, quality));
-      if (!blob) throw new Error("Komprimierung fehlgeschlagen.");
+      if (!blob) throw new Error(t.compressFailed);
       setResult({ url: URL.createObjectURL(blob), size: blob.size, width: w, height: h });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Fehler bei der Komprimierung.");
+      setError(e instanceof Error ? e.message : t.genericError);
     } finally {
       setBusy(false);
     }
@@ -72,7 +136,7 @@ export default function ImageCompress() {
   return (
     <div className="image-compress space-y-5">
       <label className="block">
-        <span className="mb-1 block text-sm opacity-80">Bild auswählen</span>
+        <span className="mb-1 block text-sm opacity-80">{t.chooseImage}</span>
         <input type="file" accept="image/*" onChange={(e) => onFile(e.target.files?.[0])} className={field} />
       </label>
 
@@ -80,23 +144,23 @@ export default function ImageCompress() {
         <>
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="block text-sm">
-              <span className="mb-1 block opacity-80">Format</span>
+              <span className="mb-1 block opacity-80">{t.format}</span>
               <select className={field} value={format} onChange={(e) => setFormat(e.target.value as "image/jpeg" | "image/webp")}>
                 <option value="image/jpeg">JPEG</option>
                 <option value="image/webp">WebP</option>
               </select>
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block opacity-80">Qualität: {Math.round(quality * 100)}%</span>
+              <span className="mb-1 block opacity-80">{t.quality}: {Math.round(quality * 100)}%</span>
               <input type="range" min={0.3} max={1} step={0.05} value={quality} onChange={(e) => setQuality(Number(e.target.value))} className="w-full" />
             </label>
             <label className="block text-sm">
-              <span className="mb-1 block opacity-80">Max. Breite: {maxWidth}px</span>
+              <span className="mb-1 block opacity-80">{t.maxWidth}: {maxWidth}px</span>
               <input type="range" min={320} max={4000} step={80} value={maxWidth} onChange={(e) => setMaxWidth(Number(e.target.value))} className="w-full" />
             </label>
           </div>
           <button type="button" className="btn btn-primary" onClick={compress} disabled={busy}>
-            {busy ? "Komprimiere …" : "Komprimieren"}
+            {busy ? t.compressing : t.compress}
           </button>
         </>
       )}
@@ -105,19 +169,19 @@ export default function ImageCompress() {
 
       {result && original && (
         <div className="tds-card space-y-3 p-4">
-          <img src={result.url} alt="Komprimiertes Bild" className="tds-card h-auto max-h-64 max-w-full" />
+          <img src={result.url} alt={t.resultAlt} className="tds-card h-auto max-h-64 max-w-full" />
           <p className="text-sm">
             {fmtSize(original.size)} → <strong>{fmtSize(result.size)}</strong>
-            {saving !== null && saving > 0 && <span className="text-[color:var(--color-success)]"> ({saving}% kleiner)</span>}
+            {saving !== null && saving > 0 && <span className="text-[color:var(--color-success)]">{t.smaller(saving)}</span>}
             <span className="opacity-60"> · {result.width}×{result.height}px</span>
           </p>
-          <a href={result.url} download={`komprimiert.${ext}`} className="btn btn-ghost">
-            Herunterladen
+          <a href={result.url} download={`${t.downloadName}.${ext}`} className="btn btn-ghost">
+            {t.download}
           </a>
         </div>
       )}
 
-      <p className="text-xs opacity-60">Alle Bilder werden lokal in deinem Browser verarbeitet und niemals hochgeladen.</p>
+      <p className="text-xs opacity-60">{t.note}</p>
     </div>
   );
 }
