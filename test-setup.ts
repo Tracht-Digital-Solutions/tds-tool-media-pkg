@@ -1,19 +1,14 @@
 /**
- * jsdom (25) ships `Blob`/`File` without `arrayBuffer()`. Both islands read the
- * user's file with it, so without this shim every test fails with
- * "f.arrayBuffer is not a function" — a limitation of the test DOM, not of the
- * tool: every browser that can run these tools has had `Blob.arrayBuffer` for
- * years.
+ * Test environment setup.
  *
- * Implemented over `FileReader`, which jsdom does provide.
+ * This file used to shim `Blob.prototype.arrayBuffer`, which jsdom 25 did not
+ * implement — both file-reading islands call it, so without the shim every test
+ * failed with "f.arrayBuffer is not a function". jsdom 30 provides it (and
+ * `Blob.prototype.text`) natively, so the shim is gone.
+ *
+ * Kept as a file rather than dropped from `vitest.config.ts`: the three packs
+ * that read user files all point `setupFiles` here, and the next environment
+ * gap belongs in one place. Adding an unconditional polyfill here would now
+ * OVERWRITE a real implementation, so guard anything added.
  */
-if (typeof Blob !== "undefined" && !Blob.prototype.arrayBuffer) {
-  Blob.prototype.arrayBuffer = function arrayBuffer(this: Blob): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsArrayBuffer(this);
-    });
-  };
-}
+export {};
