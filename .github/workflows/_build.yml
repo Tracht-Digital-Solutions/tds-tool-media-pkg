@@ -63,6 +63,12 @@ jobs:
         # to the marketing geometry after the site moved to the panel surface.
         run: npm run lint:primitives
 
+      - name: Test
+        # A regression test that gates nothing is decoration. This pack ships a
+        # full vitest suite that only ever ran on a developer machine, so a
+        # broken tool reached the site build green. It is a release gate now.
+        run: npm run test:run
+
       - name: Build
         run: npm run build
 

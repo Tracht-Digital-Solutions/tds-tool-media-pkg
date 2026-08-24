@@ -1,6 +1,6 @@
 {
   "name": "@tracht-digital-solutions/tds-tool-media",
-  "version": "0.1.9",
+  "version": "26.6.0",
   "description": "Media utilities for the TDS tools platform: image compression/resize (free) + PDF tools — merge/split/rotate (premium). Fully client-side.",
   "license": "UNLICENSED",
   "private": false,
@@ -32,7 +32,7 @@
     "pdf-lib": "^1.17.1"
   },
   "peerDependencies": {
-    "@tracht-digital-solutions/tds-tools-contract": "^1.0.0",
+    "@tracht-digital-solutions/tds-tools-contract": "^26.7.0",
     "astro": ">=6",
     "react": ">=18",
     "react-dom": ">=18"
@@ -41,7 +41,7 @@
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
-    "@tracht-digital-solutions/tds-tools-contract": "^1.0.0",
+    "@tracht-digital-solutions/tds-tools-contract": "^26.7.0",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "jsdom": "^25.0.1",

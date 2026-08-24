@@ -17,6 +17,8 @@ interface Strings {
   mergeName: string;
   splitName: string;
   rotateName: string;
+  /** Names the tab group for screen readers; the qr pack's tablist has one too. */
+  tabsLabel: string;
   tabMerge: string;
   tabSplit: string;
   tabRotate: string;
@@ -46,6 +48,7 @@ const STRINGS = {
     mergeName: "zusammengefuehrt.pdf",
     splitName: "auszug.pdf",
     rotateName: "gedreht.pdf",
+    tabsLabel: "Werkzeug",
     tabMerge: "Zusammenführen",
     tabSplit: "Aufteilen",
     tabRotate: "Drehen",
@@ -72,6 +75,7 @@ const STRINGS = {
     mergeName: "merged.pdf",
     splitName: "extract.pdf",
     rotateName: "rotated.pdf",
+    tabsLabel: "Tool",
     tabMerge: "Merge",
     tabSplit: "Split",
     tabRotate: "Rotate",
@@ -154,7 +158,7 @@ export default function PdfTools({ lang = "de" }: Props) {
         download(await out.save(), t.mergeName);
         setStatus(t.merged(mergeFiles.length));
       } else if (mode === "split") {
-        if (!singleFile) throw new Error("Bitte ein PDF wählen.");
+        if (!singleFile) throw new Error(t.needOne);
         const src = await PDFDocument.load(await singleFile.arrayBuffer());
         const idx = parseRange(range, src.getPageCount());
         if (idx.length === 0) throw new Error(t.badRange);
@@ -164,7 +168,7 @@ export default function PdfTools({ lang = "de" }: Props) {
         download(await out.save(), t.splitName);
         setStatus(t.extracted(idx.length));
       } else {
-        if (!singleFile) throw new Error("Bitte ein PDF wählen.");
+        if (!singleFile) throw new Error(t.needOne);
         const src = await PDFDocument.load(await singleFile.arrayBuffer());
         src.getPages().forEach((p) => {
           const current = p.getRotation().angle;
@@ -185,7 +189,7 @@ export default function PdfTools({ lang = "de" }: Props) {
 
   return (
     <div className="pdf-tools space-y-5">
-      <div className="flex flex-wrap gap-2" role="tablist">
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label={t.tabsLabel}>
         {(
           [
             ["merge", t.tabMerge],
@@ -241,7 +245,7 @@ export default function PdfTools({ lang = "de" }: Props) {
         {busy ? t.working : t.run}
       </button>
 
-      {error && <p className="status-pill status-pill--danger text-sm">{error}</p>}
+      {error && <p className="status-pill status-pill--danger text-sm" role="alert">{error}</p>}
       {status && <p className="status-pill status-pill--success text-sm">{status}</p>}
 
       <p className="text-xs opacity-60">{t.note}</p>

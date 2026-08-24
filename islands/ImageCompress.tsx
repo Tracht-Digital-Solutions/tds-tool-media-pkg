@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /** See the tools-site convention: labels are translated, logic is not. */
 type Lang = "de" | "en";
@@ -93,15 +93,51 @@ export default function ImageCompress({ lang = "de" }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [imgEl, setImgEl] = useState<HTMLImageElement | null>(null);
 
+  /**
+   * Every object URL this island has minted, so each can be released.
+   *
+   * An object URL pins its Blob for the lifetime of the DOCUMENT, not of the
+   * component — dropping the last reference to it frees nothing. Both URLs here
+   * were previously created and never revoked, and the result URL was replaced
+   * on every run, so compressing a 12 MP photo ten times left ten decoded
+   * bitmaps alive until the tab closed. Nothing errors; the tab just grows.
+   *
+   * A ref rather than state: revoking must not schedule a render, and the
+   * unmount cleanup has to see the latest value, which a captured state
+   * variable would not.
+   */
+  const sourceUrl = useRef<string | null>(null);
+  const resultUrl = useRef<string | null>(null);
+
+  const releaseSource = () => {
+    if (sourceUrl.current) URL.revokeObjectURL(sourceUrl.current);
+    sourceUrl.current = null;
+  };
+  const releaseResult = () => {
+    if (resultUrl.current) URL.revokeObjectURL(resultUrl.current);
+    resultUrl.current = null;
+  };
+
+  // Unmount is the last chance: an Astro island is torn down on navigation.
+  useEffect(() => () => {
+    releaseSource();
+    releaseResult();
+  }, []);
+
   const onFile = (file: File | undefined) => {
     if (!file) return;
     setError(null);
     setResult(null);
+    // The previous run's output is about to become unreachable from the UI.
+    releaseResult();
+    releaseSource();
     setOriginal({ name: file.name, size: file.size });
     const img = new Image();
+    const url = URL.createObjectURL(file);
+    sourceUrl.current = url;
     img.onload = () => setImgEl(img);
     img.onerror = () => setError(t.loadFailed);
-    img.src = URL.createObjectURL(file);
+    img.src = url;
   };
 
   const compress = async () => {
@@ -120,7 +156,11 @@ export default function ImageCompress({ lang = "de" }: Props) {
       ctx.drawImage(imgEl, 0, 0, w, h);
       const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, format, quality));
       if (!blob) throw new Error(t.compressFailed);
-      setResult({ url: URL.createObjectURL(blob), size: blob.size, width: w, height: h });
+      // Re-compressing replaces the download target, so the old one is dead.
+      releaseResult();
+      const url = URL.createObjectURL(blob);
+      resultUrl.current = url;
+      setResult({ url, size: blob.size, width: w, height: h });
     } catch (e) {
       setError(e instanceof Error ? e.message : t.genericError);
     } finally {
@@ -165,7 +205,7 @@ export default function ImageCompress({ lang = "de" }: Props) {
         </>
       )}
 
-      {error && <p className="status-pill status-pill--danger text-sm">{error}</p>}
+      {error && <p className="status-pill status-pill--danger text-sm" role="alert">{error}</p>}
 
       {result && original && (
         <div className="tds-card space-y-3 p-4">

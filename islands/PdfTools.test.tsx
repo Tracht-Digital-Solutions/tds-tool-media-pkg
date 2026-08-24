@@ -347,4 +347,18 @@ describe("in English", () => {
     render(<PdfTools lang="en" />);
     expect(screen.getByText(/never uploaded/)).toBeDefined();
   });
+
+  it.each(["Split", "Rotate"])("refuses an empty %s selection in English", async (tab) => {
+    // `t.needOne` was declared and translated but never used: both single-file
+    // modes threw a hard-coded "Bitte ein PDF wählen." So the merge tab above
+    // spoke English while these two answered in German, and only on the error
+    // path — which is why the existing English test could not see it.
+    const u = userEvent.setup({ delay: null });
+    render(<PdfTools lang="en" />);
+    await u.click(screen.getByRole("tab", { name: tab }));
+    await u.click(screen.getByRole("button", { name: "Run & download" }));
+
+    expect(await screen.findByText("Please choose a PDF.")).toBeDefined();
+    expect(screen.queryByText(/Bitte ein PDF/)).toBeNull();
+  });
 });

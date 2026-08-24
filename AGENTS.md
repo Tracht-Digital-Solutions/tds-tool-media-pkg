@@ -38,15 +38,16 @@ docblock; the manifest suite runs in node.
 ## Gotchas
 
 - **This pack ships NO CSS — every control must carry a shared class.** The tools
-  site renders on the `panel` surface, and a surface layer only sets tokens: they
+  site renders on the `blog` surface (it moved there 2026-08-17; it was `panel`
+  before, and both are token-only layers), and a surface layer only sets tokens: they
   reach an element through `btn` / `chip` / `field-boxed` / `tds-card`. A
   `<button>` without `btn` therefore has no padding, no radius and no 44px touch
   target, and an `<input>` without `field-boxed` renders **invisible**, because
   Tailwind preflight zeroes borders.
   Until 2026-08-16 every button in this pack was bare and the markup wrote its own
   radii — `rounded-full` tabs (the *marketing* pill) and `rounded-lg` inputs, long
-  after the site had moved to the panel. That is why the tools rounded differently
-  from the panels. `npm run lint:primitives` runs in CI and fails on a bare
+  after the site had left the marketing surface. That is why the tools rounded
+  differently from everything around them. `npm run lint:primitives` runs in CI and fails on a bare
   control; the script is a byte-identical copy of the seed in `tds-ext-template-pkg`.
 - **Never hand-author a radius, and do not reach for `rounded-[var(--tds-radius-*)]`
   either.** Tailwind does not generate arbitrary values out of a package inside

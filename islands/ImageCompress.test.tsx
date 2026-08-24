@@ -21,6 +21,9 @@ let encodedSize = 40_000;
 let lastToBlobArgs: [string, number] | null = null;
 let lastCanvas: { width: number; height: number } | null = null;
 let naturalSize = { width: 3200, height: 2400 };
+/** Object URLs handed out and released during one test. */
+let minted: string[] = [];
+let revoked: string[] = [];
 
 class StubImage {
   onload: (() => void) | null = null;
@@ -47,9 +50,25 @@ beforeEach(() => {
   naturalSize = { width: 3200, height: 2400 };
 
   vi.stubGlobal("Image", StubImage);
+  // Unique per call, so a test can say WHICH url was released. A single
+  // constant would make "revoked the old one" and "revoked the new one"
+  // indistinguishable — and the leak this guards was exactly the old one
+  // surviving.
+  minted = [];
+  revoked = [];
   Object.defineProperty(URL, "createObjectURL", {
     configurable: true,
-    value: vi.fn(() => "blob:mock"),
+    value: vi.fn(() => {
+      const url = `blob:mock-${minted.length + 1}`;
+      minted.push(url);
+      return url;
+    }),
+  });
+  Object.defineProperty(URL, "revokeObjectURL", {
+    configurable: true,
+    value: vi.fn((url: string) => {
+      revoked.push(url);
+    }),
   });
 
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
@@ -73,6 +92,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   delete (URL as Partial<typeof URL>).createObjectURL;
+  delete (URL as Partial<typeof URL>).revokeObjectURL;
 });
 
 /** Pick a file and wait for the (stubbed) decode to finish. */
@@ -262,5 +282,61 @@ describe("in English", () => {
     // competitors, so it must not silently stay German on an English page.
     render(<ImageCompress lang="en" />);
     expect(screen.getByText(/never uploaded/)).toBeDefined();
+  });
+});
+
+/**
+ * Object URLs are a manual resource.
+ *
+ * `URL.createObjectURL` pins its Blob to the DOCUMENT, not to the component, so
+ * losing the last JS reference frees nothing. This island minted one per file
+ * picked and one per compression and revoked neither: ten runs on a 12 MP photo
+ * left ten decoded bitmaps alive until the tab closed. There is no error, no
+ * warning and no visible symptom — only a tab that grows — which is why it
+ * needs a test rather than a review.
+ */
+describe("object URL lifetime", () => {
+  it("releases the previous result when compressing again", async () => {
+    const u = user();
+    await choose();
+    await u.click(screen.getByRole("button", { name: "Komprimieren" }));
+    await screen.findByRole("link", { name: /Herunterladen/ });
+    const firstResult = minted[minted.length - 1];
+
+    await u.click(screen.getByRole("button", { name: "Komprimieren" }));
+    await waitFor(() => expect(revoked).toContain(firstResult));
+  });
+
+  it("releases the previous file's urls when another file is picked", async () => {
+    const u = user();
+    await choose();
+    await u.click(screen.getByRole("button", { name: "Komprimieren" }));
+    await screen.findByRole("link", { name: /Herunterladen/ });
+    const before = [...minted];
+
+    await u.upload(
+      screen.getByLabelText("Bild auswählen"),
+      new File([new Uint8Array(1000)], "zweites.jpg", { type: "image/jpeg" }),
+    );
+
+    await waitFor(() => {
+      for (const url of before) expect(revoked).toContain(url);
+    });
+  });
+
+  it("releases everything on unmount", async () => {
+    // An Astro island is torn down on navigation, which is the common case:
+    // without this the leak simply outlives the page that caused it.
+    const u = user();
+    const file = new File([new Uint8Array(200_000)], "foto.jpg", { type: "image/jpeg" });
+    const view = render(<ImageCompress />);
+    await u.upload(screen.getByLabelText("Bild auswählen"), file);
+    await screen.findByRole("button", { name: "Komprimieren" });
+    await u.click(screen.getByRole("button", { name: "Komprimieren" }));
+    await screen.findByRole("link", { name: /Herunterladen/ });
+
+    view.unmount();
+
+    for (const url of minted) expect(revoked).toContain(url);
   });
 });
