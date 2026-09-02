@@ -49,6 +49,17 @@ docblock; the manifest suite runs in node.
   after the site had left the marketing surface. That is why the tools rounded
   differently from everything around them. `npm run lint:primitives` runs in CI and fails on a bare
   control; the script is a byte-identical copy of the seed in `tds-ext-template-pkg`.
+- **`status-pill` ist ein Etikett, keine Blockmeldung.** Die Plakette hat
+  `white-space: nowrap` und Versalien und ist für ein Wort gedacht. Eine
+  Fehlermeldung darin bricht nicht um, sondern macht das Dokument breiter als
+  das Fenster: im JSON-Formatter waren es 460px bei 390px Fenster, weil die
+  Meldung den Text des Browsers trägt und damit beliebig lang ist. Zu sehen
+  ist davon nichts — `body { overflow-x: hidden }` schneidet den Überhang ab,
+  man findet es nur, indem man `document.documentElement.scrollWidth` misst.
+  Für eine Meldung über mehrere Zeilen ist `tds-alert` (`--success` /
+  `--warning` / `--danger`) die richtige Klasse; tds-shared sagt das im
+  Kommentar über `.status-pill` auch selbst. Ein `<span>` als kurzes Etikett
+  neben etwas anderem bleibt eine Plakette.
 - **Never hand-author a radius, and do not reach for `rounded-[var(--tds-radius-*)]`
   either.** Tailwind does not generate arbitrary values out of a package inside
   `node_modules`, so from here that ships as no rule at all. Use the shared class.

@@ -315,7 +315,8 @@ describe("failure handling", () => {
     await user().click(runButton());
 
     // pdf-lib's own message is surfaced; the point is that it is caught.
-    await waitFor(() => expect(screen.getByText(/./, { selector: ".status-pill--danger" })).toBeDefined());
+    // Blockmeldung, also `.tds-alert` — eine `.status-pill` bricht nicht um.
+    await waitFor(() => expect(screen.getByText(/./, { selector: ".tds-alert--danger" })).toBeDefined());
     expect(captured).toBeNull();
   });
 });

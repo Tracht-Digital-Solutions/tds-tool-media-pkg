@@ -205,7 +205,7 @@ export default function ImageCompress({ lang = "de" }: Props) {
         </>
       )}
 
-      {error && <p className="status-pill status-pill--danger text-sm" role="alert">{error}</p>}
+      {error && <p className="tds-alert tds-alert--danger" role="alert">{error}</p>}
 
       {result && original && (
         <div className="tds-card space-y-3 p-4">
