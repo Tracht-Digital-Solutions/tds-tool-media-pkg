@@ -205,10 +205,12 @@ export default function ImageCompress({ lang = "de" }: Props) {
         </>
       )}
 
-      {error && <p className="tds-alert tds-alert--danger" role="alert">{error}</p>}
+      {error && <p className="tds-alert tds-alert--danger tds-appear" role="alert">{error}</p>}
 
       {result && original && (
-        <div className="tds-card space-y-3 p-4">
+        // tds-appear (tds-shared): the compressed image fades into place as the
+        // card is inserted. CSS only — a public tool ships no animation runtime.
+        <div className="tds-card tds-appear space-y-3 p-4">
           <img src={result.url} alt={t.resultAlt} className="tds-card h-auto max-h-64 max-w-full" />
           <p className="text-sm">
             {fmtSize(original.size)} → <strong>{fmtSize(result.size)}</strong>

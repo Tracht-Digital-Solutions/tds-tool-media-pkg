@@ -245,8 +245,8 @@ export default function PdfTools({ lang = "de" }: Props) {
         {busy ? t.working : t.run}
       </button>
 
-      {error && <p className="tds-alert tds-alert--danger" role="alert">{error}</p>}
-      {status && <p className="tds-alert tds-alert--success">{status}</p>}
+      {error && <p className="tds-alert tds-alert--danger tds-appear" role="alert">{error}</p>}
+      {status && <p className="tds-alert tds-alert--success tds-appear">{status}</p>}
 
       <p className="text-xs opacity-60">{t.note}</p>
     </div>

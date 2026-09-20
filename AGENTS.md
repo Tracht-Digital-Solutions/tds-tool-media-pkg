@@ -82,3 +82,10 @@ docblock; the manifest suite runs in node.
   package just marks the default.
 - Islands/.astro compile at the site build (not in tsconfig `include`).
 - Version stays in the `0.1.x` line (site pins `^0.1.x`).
+- **`tds-appear` belongs to `tds-shared`, not to this pack.** The class fades a
+  result into place the moment it is INSERTED — no script, no runtime, which is
+  the only kind of motion a public tool may carry. Two consequences: the CSS
+  arrives with the site's `tds-shared` (>=0.38.8), so the class does nothing in
+  a site pinned lower; and an element that merely changes its text does not
+  re-animate, so a permanent output box needs a `key` on the value to be
+  re-inserted.
