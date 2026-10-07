@@ -10,7 +10,8 @@ layer only sets tokens. Tokens reach an element through shared classes.
   An `<input>` without `field-boxed` renders **invisible**, because Tailwind preflight
   zeroes borders.
 - `npm run lint:primitives` runs in CI and fails on a bare control. The script is a
-  byte-identical copy of the seed in `tds-ext-template-pkg`; change it there.
+  copy of the seed in `tds-ext-template-pkg`; change it there and propagate (see
+  `tds-ext-template-pkg/docs/agents/lint-primitives.md`).
   It walks each tag tracking quotes and brace depth and resolves a local `const` to its
   string, so attribute order and constant names don't matter.
 
