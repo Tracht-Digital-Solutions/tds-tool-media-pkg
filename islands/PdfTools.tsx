@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PDFDocument, degrees } from "pdf-lib";
+import { FileDropZone } from "@tracht-digital-solutions/tds-shared/dropzone";
 
 type Mode = "merge" | "split" | "rotate";
 
@@ -25,6 +26,8 @@ interface Strings {
   choosePdfs: string;
   filesChosen: (n: number) => string;
   choosePdf: string;
+  dropHint: string;
+  dropActive: string;
   pages: string;
   rotation: string;
   cw90: string;
@@ -55,6 +58,8 @@ const STRINGS = {
     choosePdfs: "PDFs auswählen (Reihenfolge = Auswahlreihenfolge)",
     filesChosen: (n) => `${n} Datei(en) gewählt`,
     choosePdf: "PDF auswählen",
+    dropHint: "oder hierher ziehen",
+    dropActive: "Loslassen zum Hinzufügen",
     pages: "Seiten (z. B. 1-3,5)",
     rotation: "Drehung",
     cw90: "90° im Uhrzeigersinn",
@@ -82,6 +87,8 @@ const STRINGS = {
     choosePdfs: "Choose PDFs (order of selection = order in the result)",
     filesChosen: (n) => `${n} file(s) selected`,
     choosePdf: "Choose a PDF",
+    dropHint: "or drag here",
+    dropActive: "Release to add",
     pages: "Pages (e.g. 1-3,5)",
     rotation: "Rotation",
     cw90: "90° clockwise",
@@ -211,16 +218,26 @@ export default function PdfTools({ lang = "de" }: Props) {
       </div>
 
       {mode === "merge" ? (
-        <label className="block text-sm">
-          <span className="mb-1 block opacity-80">{t.choosePdfs}</span>
-          <input type="file" accept="application/pdf" multiple className={field} onChange={(e) => setMergeFiles(Array.from(e.target.files ?? []))} />
-          {mergeFiles.length > 0 && <span className="mt-1 block text-xs opacity-60">{t.filesChosen(mergeFiles.length)}</span>}
-        </label>
+        <FileDropZone
+          key="merge"
+          label={t.choosePdfs}
+          hint={t.dropHint}
+          activeLabel={t.dropActive}
+          accept="application/pdf"
+          multiple
+          onFiles={setMergeFiles}
+        >
+          {mergeFiles.length > 0 && <span className="block text-xs opacity-60">{t.filesChosen(mergeFiles.length)}</span>}
+        </FileDropZone>
       ) : (
-        <label className="block text-sm">
-          <span className="mb-1 block opacity-80">{t.choosePdf}</span>
-          <input type="file" accept="application/pdf" className={field} onChange={(e) => setSingleFile(e.target.files?.[0] ?? null)} />
-        </label>
+        <FileDropZone
+          key="single"
+          label={t.choosePdf}
+          hint={t.dropHint}
+          activeLabel={t.dropActive}
+          accept="application/pdf"
+          onFiles={(files) => setSingleFile(files[0] ?? null)}
+        />
       )}
 
       {mode === "split" && (

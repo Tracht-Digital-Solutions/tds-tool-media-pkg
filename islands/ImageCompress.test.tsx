@@ -163,7 +163,7 @@ describe("loading", () => {
 
   it("takes dropped files", async () => {
     render(<ImageCompress />);
-    const zone = screen.getByLabelText("Bilder auswählen").closest(".image-compress")!;
+    const zone = screen.getByLabelText("Bilder auswählen").closest(".tds-dropzone")!;
     fireEvent.drop(zone, { dataTransfer: { files: [jpeg(), jpeg(1000, "zwei.png", "image/png")] } });
 
     expect(await screen.findByText("foto.jpg")).toBeDefined();
@@ -172,7 +172,7 @@ describe("loading", () => {
 
   it("ignores dropped files that are not images", async () => {
     render(<ImageCompress />);
-    const zone = screen.getByLabelText("Bilder auswählen").closest(".image-compress")!;
+    const zone = screen.getByLabelText("Bilder auswählen").closest(".tds-dropzone")!;
     fireEvent.drop(zone, { dataTransfer: { files: [new File(["x"], "notiz.txt", { type: "text/plain" })] } });
     expect(screen.queryByText("notiz.txt")).toBeNull();
   });

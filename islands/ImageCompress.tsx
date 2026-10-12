@@ -14,6 +14,7 @@ import {
   type EncodableMime,
   type OutputFormat,
 } from "./compressCore";
+import { FileDropZone } from "@tracht-digital-solutions/tds-shared/dropzone";
 
 /** See the tools-site convention: labels are translated, logic is not. */
 type Lang = "de" | "en";
@@ -90,8 +91,8 @@ const STRINGS = {
     compressFailed: "Komprimierung fehlgeschlagen.",
     formatUnsupported: "Dieser Browser kann das gewählte Format nicht schreiben. Bitte JPEG oder PNG wählen.",
     chooseImage: "Bilder auswählen",
-    dropHint: "Oder Bilder hierher ziehen bzw. mit Strg+V einfügen. JPG, PNG, WebP, AVIF und GIF; mehrere auf einmal.",
-    dropActive: "Loslassen, um die Bilder hinzuzufügen",
+    dropHint: "oder hierher ziehen bzw. mit Strg+V einfügen. JPG, PNG, WebP, AVIF und GIF; mehrere auf einmal.",
+    dropActive: "Loslassen zum Hinzufügen",
     presets: "Voreinstellung",
     presetNames: { web: "Website", email: "E-Mail", social: "Social Media", thumb: "Vorschaubild" },
     format: "Format",
@@ -131,8 +132,8 @@ const STRINGS = {
     compressFailed: "Compression failed.",
     formatUnsupported: "This browser cannot write the chosen format. Please pick JPEG or PNG.",
     chooseImage: "Choose images",
-    dropHint: "Or drag images here, or paste with Ctrl+V. JPG, PNG, WebP, AVIF and GIF; several at once.",
-    dropActive: "Release to add the images",
+    dropHint: "or drag them here, or paste with Ctrl+V. JPG, PNG, WebP, AVIF and GIF; several at once.",
+    dropActive: "Release to add",
     presets: "Preset",
     presetNames: { web: "Website", email: "Email", social: "Social media", thumb: "Thumbnail" },
     format: "Format",
@@ -247,7 +248,6 @@ export default function ImageCompress({ lang = "de" }: Props) {
     "image/avif": false,
   });
   const [busy, setBusy] = useState(false);
-  const [dragging, setDragging] = useState(false);
   const nextId = useRef(1);
   const hintId = useId();
 
@@ -300,21 +300,6 @@ export default function ImageCompress({ lang = "de" }: Props) {
     }
     if (added.length) setItems((list) => [...list, ...added]);
   };
-
-  // Paste anywhere on the page: a screenshot goes straight in with Ctrl+V.
-  useEffect(() => {
-    const onPaste = (e: ClipboardEvent) => {
-      const files = Array.from(e.clipboardData?.files ?? []).filter((f) => f.type.startsWith("image/"));
-      if (files.length) {
-        e.preventDefault();
-        addFiles(files);
-      }
-    };
-    document.addEventListener("paste", onPaste);
-    return () => document.removeEventListener("paste", onPaste);
-    // addFiles only closes over refs, setters and the language's strings.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
 
   const remove = (id: number) => {
     setItems((list) => {
@@ -445,39 +430,16 @@ export default function ImageCompress({ lang = "de" }: Props) {
   const field = "field-boxed w-full";
 
   return (
-    <div
-      className="image-compress space-y-5"
-      onDragOver={(e) => {
-        e.preventDefault();
-        setDragging(true);
-      }}
-      onDragLeave={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        setDragging(false);
-        addFiles(Array.from(e.dataTransfer?.files ?? []));
-      }}
-    >
-      <div className="tds-card space-y-2 p-5" data-dragging={dragging || undefined}>
-        <label className="block">
-          <span className="mb-1 block text-sm opacity-80">{t.chooseImage}</span>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => {
-              addFiles(Array.from(e.target.files ?? []));
-              e.target.value = "";
-            }}
-            className={field}
-          />
-        </label>
-        <p className="text-sm opacity-70" aria-live="polite">
-          {dragging ? t.dropActive : t.dropHint}
-        </p>
-      </div>
+    <div className="image-compress space-y-5">
+      <FileDropZone
+        label={t.chooseImage}
+        hint={t.dropHint}
+        activeLabel={t.dropActive}
+        accept="image/*"
+        multiple
+        paste
+        onFiles={addFiles}
+      />
 
       {ready && (
         <>
