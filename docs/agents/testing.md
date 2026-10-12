@@ -14,9 +14,12 @@ docblock. The manifest suite runs in node.
 
 ## Image compressor
 
-- Canvas is stubbed (jsdom has no 2D context). Assertions cover the arithmetic the tool
-  owns: the resize rule, the never-upscale clamp, and the format and quality passed to
-  `toBlob`.
+- `compressCore.test.ts` runs in node: fit rule, target-size search, names, ZIP bytes.
+- In the island suite canvas is stubbed (jsdom has no 2D context). The stub's `toBlob`
+  falls back to PNG for types listed in `unwritable`, like a real browser, and its size
+  can be a function of quality, which is how the target-size search is driven.
+- The mount-time format probe draws on a 1×1 canvas; the stub ignores those calls when
+  recording the last encode.
 
 ## Setup
 

@@ -7,7 +7,7 @@ nothing is uploaded.
 
 | id | slug | premium | description |
 |---|---|---|---|
-| `image-compress` | `bild-komprimieren` | no | Resize + re-encode images (JPEG/WebP) with a quality slider |
+| `image-compress` | `bild-komprimieren` | no | Several images at once: fit to max width/height, re-encode as JPEG/WebP/PNG/AVIF at a quality or down to a target size in KB, presets, before/after view, ZIP download |
 | `pdf-tools` | `pdf-werkzeuge` | **yes** | Merge / split / rotate PDFs (pdf-lib) |
 
 `pdf-tools` ships `premiumDefault: true` + `priceCentsDefault: 500`; the admin
@@ -35,10 +35,13 @@ npm run build
   file back to assert page counts, page order and rotation. Covers the range
   parser (`1-3,5`, de-duping, clamping, junk fragments) and that rotation
   *accumulates* onto an existing angle and wraps past 360°.
-- **`islands/ImageCompress.test.tsx`** — the resize arithmetic, including the
-  "never upscale a smaller image" branch, the format/quality handed to
-  `toBlob`, and the size/percentage readout. Canvas and image decoding are
-  stubbed (jsdom has neither); the arithmetic under test is the tool's own.
+- **`islands/compressCore.test.ts`** — the compressor's arithmetic in node: the
+  fit rule (never upscale), the target-size search (quality first, then
+  pixels), file naming and a byte-level check of the stored ZIP writer.
+- **`islands/ImageCompress.test.tsx`** — the wiring: limits and format/quality
+  reaching the canvas, white fill under JPEG, several files, drop, presets,
+  the ZIP download, "keep the original when re-encoding would grow it", and
+  object-URL release. Canvas and image decoding are stubbed (jsdom has neither).
 
 `test-setup.ts` shims `Blob.arrayBuffer`, which jsdom lacks — a limitation of
 the test DOM, not of the tool.

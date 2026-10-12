@@ -6,7 +6,11 @@
   compiles and the only file `tsc` type-checks.
 - `tools/*.astro` — tool shells that the site's `/tools/[slug]` template renders.
 - `islands/*.tsx` — hydrated React islands, fully client-side.
-  - Image compression uses canvas, no dependency.
+  - Image compression uses canvas, no dependency. Its arithmetic (fit rule,
+    target-size search, naming, the stored-ZIP writer) lives in
+    `islands/compressCore.ts` so it is testable without a DOM. AVIF/WebP are
+    offered only after a canvas probe confirms the browser writes them:
+    `toBlob` silently falls back to PNG for an unsupported type.
   - PDF merge/split/rotate uses `pdf-lib`, a real dependency that the site installs
     transitively.
 

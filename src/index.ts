@@ -1,7 +1,8 @@
 import { defineToolPack, defineTool } from "@tracht-digital-solutions/tds-tools-contract";
 
 /**
- * Media utilities: a free client-side image compressor + a premium PDF toolkit
+ * Media utilities: a free client-side image compressor (batch, target size,
+ * ZIP download) + a premium PDF toolkit
  * (merge / split / rotate). The PDF tool ships the `premiumDefault` flag; the
  * admin catalog decides the final gating + price.
  */
@@ -16,14 +17,25 @@ export default defineToolPack({
       name: "Bild komprimieren",
       category: "media",
       description:
-        "Verkleinere und komprimiere Bilder (JPG/PNG/WebP) direkt im Browser — mit einstellbarer Qualität und Zielbreite.",
+        "Bilder komprimieren und JPG-Größe verkleinern: mehrere Fotos auf einmal, auf Wunsch bis zu einer Zielgröße in KB. JPG, PNG, WebP und AVIF, ohne Upload.",
       icon: "image",
-      keywords: ["bild", "komprimieren", "resize", "verkleinern", "webp"],
+      keywords: [
+        "bild komprimieren",
+        "bilder komprimieren",
+        "bildkomprimierung",
+        "jpg verkleinern",
+        "jpg größe verkleinern",
+        "jpeg verkleinern",
+        "bildgröße ändern",
+        "kb verkleinern",
+        "webp",
+        "avif",
+      ],
       component: "@tracht-digital-solutions/tds-tool-media/tools/ImageCompress.astro",
       seo: {
-        title: "Bild komprimieren — online & kostenlos",
+        title: "Bilder komprimieren & JPG-Größe verkleinern – kostenlos",
         description:
-          "Kostenloser Bild-Kompressor: Bilder verkleinern und komprimieren (JPG/PNG/WebP) mit einstellbarer Qualität. Läuft komplett im Browser.",
+          "Bilder komprimieren und JPG-Größe verkleinern: mehrere Fotos auf einmal, Zielgröße in KB, JPG, WebP, PNG, AVIF. Kostenlos, ohne Upload im Browser.",
       },
     }),
     defineTool({
