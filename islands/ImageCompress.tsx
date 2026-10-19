@@ -15,6 +15,8 @@ import {
   type OutputFormat,
 } from "./compressCore";
 import { FileDropZone } from "@tracht-digital-solutions/tds-shared/dropzone";
+import { downloadBytes } from "@tracht-digital-solutions/tds-shared/download";
+import { Alert } from "@tracht-digital-solutions/tds-shared/alert";
 
 /** See the tools-site convention: labels are translated, logic is not. */
 type Lang = "de" | "en";
@@ -409,15 +411,7 @@ export default function ImageCompress({ lang = "de" }: Props) {
     const entries = await Promise.all(
       done.map(async (it, i) => ({ name: names[i]!, data: new Uint8Array(await it.result!.blob.arrayBuffer()) })),
     );
-    const zip = new Blob([createZip(entries) as BlobPart], { type: "application/zip" });
-    const url = URL.createObjectURL(zip);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = t.zipName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadBytes(createZip(entries), "application/zip", t.zipName);
   };
 
   const ready = items.some((it) => it.img);
@@ -629,12 +623,12 @@ export default function ImageCompress({ lang = "de" }: Props) {
                 </div>
 
                 {item.error && (
-                  <p className="tds-alert tds-alert--danger tds-appear" role="alert">
+                  <Alert>
                     {item.error}
-                  </p>
+                  </Alert>
                 )}
-                {r?.keptOriginal && <p className="tds-alert tds-alert--success">{t.keptOriginal}</p>}
-                {r?.targetMissed && <p className="tds-alert tds-alert--warning">{t.targetMissed}</p>}
+                {r?.keptOriginal && <Alert tone="success">{t.keptOriginal}</Alert>}
+                {r?.targetMissed && <Alert tone="warning">{t.targetMissed}</Alert>}
 
                 {r && !r.keptOriginal && (
                   <details className="text-sm">

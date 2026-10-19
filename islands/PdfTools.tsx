@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { PDFDocument, degrees } from "pdf-lib";
 import { FileDropZone } from "@tracht-digital-solutions/tds-shared/dropzone";
+import { downloadBytes } from "@tracht-digital-solutions/tds-shared/download";
+import { Alert } from "@tracht-digital-solutions/tds-shared/alert";
 
 type Mode = "merge" | "split" | "rotate";
 
@@ -118,15 +120,7 @@ function parseRange(spec: string, pageCount: number): number[] {
 }
 
 function download(bytes: Uint8Array, name: string) {
-  const blob = new Blob([bytes.slice()], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadBytes(bytes, "application/pdf", name);
 }
 
 /**
@@ -262,8 +256,8 @@ export default function PdfTools({ lang = "de" }: Props) {
         {busy ? t.working : t.run}
       </button>
 
-      {error && <p className="tds-alert tds-alert--danger tds-appear" role="alert">{error}</p>}
-      {status && <p className="tds-alert tds-alert--success tds-appear">{status}</p>}
+      <Alert>{error}</Alert>
+      <Alert tone="success">{status}</Alert>
 
       <p className="text-xs opacity-60">{t.note}</p>
     </div>

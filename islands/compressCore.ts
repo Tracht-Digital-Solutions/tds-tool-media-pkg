@@ -8,6 +8,9 @@
  * function of scale and quality.
  */
 
+import { formatBytes } from "@tracht-digital-solutions/tds-shared/format";
+import { createZip as writeZip } from "@tracht-digital-solutions/tds-shared/zip";
+
 /** Output formats the tool offers. `original` keeps the input's own type. */
 export type OutputFormat = "image/jpeg" | "image/webp" | "image/png" | "image/avif" | "original";
 
@@ -152,16 +155,12 @@ export async function encodeToTarget(
   return best!;
 }
 
-/** Human file size, German or English decimal mark. */
+/**
+ * Human file size, German or English decimal mark (tds-shared `formatBytes`):
+ * one decimal for KB, two for MB, so a compression result reads precisely.
+ */
 export function formatSize(bytes: number, lang: "de" | "en" = "de"): string {
-  const num = (n: number, digits: number) =>
-    n.toLocaleString(lang === "de" ? "de-DE" : "en-GB", {
-      minimumFractionDigits: digits,
-      maximumFractionDigits: digits,
-    });
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${num(bytes / 1024, 1)} KB`;
-  return `${num(bytes / (1024 * 1024), 2)} MB`;
+  return formatBytes(bytes, lang, bytes >= 1024 * 1024 ? 2 : 1);
 }
 
 /** Saving in whole percent; negative when the file grew. */
@@ -201,96 +200,16 @@ export function uniqueNames(names: string[]): string[] {
   });
 }
 
-let crcTable: Uint32Array | null = null;
-
 /** CRC-32 (IEEE), as the ZIP format requires for every entry. */
-export function crc32(data: Uint8Array): number {
-  if (!crcTable) {
-    crcTable = new Uint32Array(256);
-    for (let n = 0; n < 256; n++) {
-      let c = n;
-      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-      crcTable[n] = c >>> 0;
-    }
-  }
-  let crc = 0xffffffff;
-  for (let i = 0; i < data.length; i++) crc = crcTable[(crc ^ data[i]!) & 0xff]! ^ (crc >>> 8);
-  return (crc ^ 0xffffffff) >>> 0;
-}
+export { crc32 } from "@tracht-digital-solutions/tds-shared/zip";
 
 /**
- * A ZIP archive with every entry STORED (no deflate).
- *
- * The entries are JPEG/WebP/PNG/AVIF — already compressed, so deflating them
- * again saves next to nothing and would need a dependency. Names are UTF-8
- * (general-purpose flag bit 11), so "Prüfbericht-komprimiert.jpg" survives.
- * Sizes are 32-bit: the island never gets near 4 GB in a browser tab.
+ * A ZIP archive with every entry STORED (no deflate), written by tds-shared's
+ * `./zip`. The entries are JPEG/WebP/PNG/AVIF — already compressed, so
+ * deflating them again saves next to nothing. Names are UTF-8, so
+ * "Prüfbericht-komprimiert.jpg" survives; the date is the real one, since a
+ * person unpacks this archive.
  */
 export function createZip(entries: { name: string; data: Uint8Array }[], date = new Date()): Uint8Array {
-  const enc = new TextEncoder();
-  const dosTime = ((date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1)) & 0xffff;
-  const dosDate = (((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate()) & 0xffff;
-
-  const locals: Uint8Array[] = [];
-  const centrals: Uint8Array[] = [];
-  let offset = 0;
-
-  for (const entry of entries) {
-    const name = enc.encode(entry.name);
-    const crc = crc32(entry.data);
-    const size = entry.data.length;
-
-    const local = new Uint8Array(30 + name.length);
-    const lv = new DataView(local.buffer);
-    lv.setUint32(0, 0x04034b50, true);
-    lv.setUint16(4, 20, true); // version needed
-    lv.setUint16(6, 0x0800, true); // UTF-8 names
-    lv.setUint16(8, 0, true); // stored
-    lv.setUint16(10, dosTime, true);
-    lv.setUint16(12, dosDate, true);
-    lv.setUint32(14, crc, true);
-    lv.setUint32(18, size, true);
-    lv.setUint32(22, size, true);
-    lv.setUint16(26, name.length, true);
-    lv.setUint16(28, 0, true);
-    local.set(name, 30);
-
-    const central = new Uint8Array(46 + name.length);
-    const cv = new DataView(central.buffer);
-    cv.setUint32(0, 0x02014b50, true);
-    cv.setUint16(4, 20, true); // version made by
-    cv.setUint16(6, 20, true);
-    cv.setUint16(8, 0x0800, true);
-    cv.setUint16(10, 0, true);
-    cv.setUint16(12, dosTime, true);
-    cv.setUint16(14, dosDate, true);
-    cv.setUint32(16, crc, true);
-    cv.setUint32(20, size, true);
-    cv.setUint32(24, size, true);
-    cv.setUint16(28, name.length, true);
-    cv.setUint32(42, offset, true);
-    central.set(name, 46);
-
-    locals.push(local, entry.data);
-    centrals.push(central);
-    offset += local.length + size;
-  }
-
-  const centralSize = centrals.reduce((n, c) => n + c.length, 0);
-  const end = new Uint8Array(22);
-  const ev = new DataView(end.buffer);
-  ev.setUint32(0, 0x06054b50, true);
-  ev.setUint16(8, entries.length, true);
-  ev.setUint16(10, entries.length, true);
-  ev.setUint32(12, centralSize, true);
-  ev.setUint32(16, offset, true);
-
-  const parts = [...locals, ...centrals, end];
-  const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
-  let at = 0;
-  for (const p of parts) {
-    out.set(p, at);
-    at += p.length;
-  }
-  return out;
+  return writeZip(entries.map((e) => ({ path: e.name, data: e.data })), { date, names: "unicode" });
 }

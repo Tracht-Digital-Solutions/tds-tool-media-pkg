@@ -23,9 +23,8 @@ docblock. The manifest suite runs in node.
 
 ## Setup
 
-- `test-setup.ts` shims `Blob.arrayBuffer`. jsdom 25 doesn't implement it, and both
-  islands read the chosen file with it. Without the shim every test fails with
-  `f.arrayBuffer is not a function`. This is a test-DOM gap, not a tool bug.
+- `test-setup.ts` holds no shim today (jsdom 30 implements `Blob.arrayBuffer`); it stays as the one place
+  for the next environment gap, guarded so it never overwrites a real implementation.
 
 ## Premium fields
 

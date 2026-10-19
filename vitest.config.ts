@@ -5,8 +5,8 @@ import { defineConfig } from "vitest/config";
  * bundled), so the tests run against exactly the files the tools site composes.
  * Islands opt into jsdom with a `@vitest-environment` docblock.
  *
- * `test-setup.ts` shims `Blob.arrayBuffer`, which jsdom lacks and which both
- * islands need in order to read the user's file.
+ * `test-setup.ts` is where an environment shim would go; it holds none since
+ * jsdom 30 implements `Blob.arrayBuffer` itself.
  */
 export default defineConfig({
   test: {
