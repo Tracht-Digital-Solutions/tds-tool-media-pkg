@@ -9,8 +9,8 @@ layer only sets tokens. Tokens reach an element through shared classes.
 - A `<button>` without `btn` has no padding, no radius and no 44px touch target.
   An `<input>` without `field-boxed` renders **invisible**, because Tailwind preflight
   zeroes borders.
-- `npm run lint:primitives` runs in CI and fails on a bare control. The script is a
-  copy of the seed in `tds-ext-template-pkg`; change it there and propagate (see
+- `npm run lint:primitives` runs in CI and fails on a bare control. The script is tds-shared's
+  `tds-lint-primitives` bin (since 0.59); change it there, never in a local copy (see
   `tds-ext-template-pkg/docs/agents/lint-primitives.md`).
   It walks each tag tracking quotes and brace depth and resolves a local `const` to its
   string, so attribute order and constant names don't matter.
