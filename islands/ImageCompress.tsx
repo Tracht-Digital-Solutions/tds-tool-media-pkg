@@ -126,7 +126,7 @@ const STRINGS = {
     summary: (n, before, after, pct) =>
       `${n} ${n === 1 ? "Bild" : "Bilder"}: ${before} → ${after}${pct > 0 ? ` (${pct}% kleiner)` : ""}`,
     waiting: "Bereit",
-    note: "Alle Bilder werden lokal in Ihrem Browser verarbeitet und niemals hochgeladen.",
+    note: "Alle Bilder werden lokal im Browser verarbeitet und niemals hochgeladen.",
   },
   en: {
     loadFailed: "The image could not be loaded. Please export formats such as HEIC as JPG first.",
